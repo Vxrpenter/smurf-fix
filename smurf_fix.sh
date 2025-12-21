@@ -44,6 +44,13 @@ printf "\nThis fix uses vkBasalt along with reshade shaders (specifically ColorM
 printf "\nThis red & blue colour channel swap will make the colours normal again."
 printf "\nPlease note, this requires the lug-wine-tkg-git-11.0rc1-2 LUG runner or newer (use LUG Helper to install)."
 
+confirm() {
+    printf ":: ${color_yellow}$1 [Y/n]:${color_normal} "
+    read -rp "" option
+    if [ "$option" == "y" ] || [ "$option" == "Y" ] || [ "$remove_vkBasalt" == "" ]; then return 0; fi
+    if [ "$option" == "n" ] || [ "$option" == "N" ]; then return 1; fi
+}
+
 choose_installation() {
     printf ":: ${color_yellow}Choose a fix [v]kBasalt (default), [d]isplay, [o]ri: ${color_normal} "
     read -rp "" fix
@@ -70,42 +77,101 @@ install_vkBasalt() {
 
     case $distro in
         Arch )
-            location=$PWD
-            git clone https://aur.archlinux.org/vkbasalt.git ~/Downloads/vkBasalt/
-            cd  ~/Downloads/vkBasalt/
-            makepkg -si
-            cd $location
-            rm -rf ~/Downloads/vkBasalt/
+            pacman -Qi vkbasalt > /dev/null 2>&1
+            if [ $? == 0 ]; then
+                printf "\n> vkBasalt already installed, skipping install.";
+                return
+            fi
+
+            if [ -x "$(command -v curl)" ]; then
+                confirm "\n'yay' was detected on your system, do you want to use it?"
+                if [ $? == 0 ]; then
+                    yay -S --noconfirm --mflags --skipinteg vkBasalt
+                else
+                    install_vkBasalt_arch
+                fi
+            else
+                install_vkBasalt_arch
+            fi
         ;;
         Fedora )
+            dnf list installed vkbasalt > /dev/null 2>&1
+            if [ $? == 0 ]; then
+                printf "\n> vkBasalt already installed, skipping install.";
+                return
+            fi
+
             sudo dnf install vkBasalt
         ;;
         Ubuntu )
+            apt list --installed vkbasalt > /dev/null 2>&1
+            if [ $? == 0 ]; then
+                printf "\n> vkBasalt already installed, skipping install.";
+                return
+            fi
+
             sudo apt install vkbasalt
         ;;
         Debian )
+            apt list --installed vkbasalt > /dev/null 2>&1
+            if [ $? == 0 ]; then
+                printf "\n> vkBasalt already installed, skipping install.";
+                return
+            fi
+
             sudo apt install vkbasalt
         ;;
     esac
 }
 
+install_vkBasalt_arch() {
+    location=$PWD
+    git clone https://aur.archlinux.org/vkbasalt.git ~/Downloads/vkBasalt/
+    cd  ~/Downloads/vkBasalt/
+    makepkg -si
+    cd $location
+    rm -rf ~/Downloads/vkBasalt/
+}
+
 uninstall_vkBasalt() {
     distro="$(lsb_release -i | cut -f 2-)"
 
-    echo $distro
-
     case $distro in
         Arch )
+            pacman -Qi vkbasalt > /dev/null 2>&1
+            if [ $? == 1 ]; then
+                printf "\n> vkBasalt not installed, skipping removal.";
+                return
+            fi
+
             sudo pacman -R vkbasalt --noconfirm
             sudo pacman -R vkbasalt-debug --noconfirm
         ;;
         Fedora )
+            dnf list installed vkbasalt > /dev/null 2>&1
+            if [ $? == 1 ]; then
+                printf "\n> vkBasalt not installed, skipping removal.";
+                return
+            fi
+
             sudo dnf remove vkBasalt
         ;;
         Ubuntu )
+            apt list --installed vkbasalt > /dev/null 2>&1
+            if [ $? == 1 ]; then
+                printf "\n> vkBasalt not installed, skipping removal.";
+                return
+            fi
+
             sudo apt remove vkbasalt
         ;;
         Debian )
+            apt list --installed vkbasalt > /dev/null 2>&1
+            if [ $? == 1 ]; then
+                printf "\n> vkBasalt not installed, skipping removal.";
+                return
+            fi
+
             sudo apt remove vkbasalt
         ;;
     esac
@@ -137,7 +203,7 @@ install_fix() {
     #
 
     if [ $fix == 0 ] || [ $fix == 2 ]; then
-        printf "\n> Installing vkBasalt...\n"
+        printf "\n> Installing vkBasalt..."
         install_vkBasalt
     fi
 
@@ -304,12 +370,8 @@ uninstall_fix() {
             read -rp "" starcitizen_dir
             if [ "$starcitizen_dir" == "" ]; then starcitizen_dir="/home/$USER/Games/star-citizen"; fi
 
-            printf ":: ${color_yellow}Remove vkBasalt? [Y/n]:${color_normal} "
-            read -rp "" remove_vkBasalt
-            if [ "$remove_vkBasalt" == "y" ] || [ "$remove_vkBasalt" == "Y" ] || [ "$remove_vkBasalt" == "" ]; then remove_vkBasalt=true; fi
-            if [ "$remove_vkBasalt" == "n" ] || [ "$remove_vkBasalt" == "N" ]; then remove_vkBasalt=false; fi
-
-            if [ $remove_vkBasalt == true ]; then
+            confirm "Remove vkBasalt?"
+            if [ $? == 0 ]; then
                 printf "\n> Removing vkBasalt..."
                 uninstall_vkBasalt
             fi
@@ -334,12 +396,8 @@ uninstall_fix() {
             read -rp "" starcitizen_dir
             if [ "$starcitizen_dir" == "" ]; then starcitizen_dir="/home/$USER/Games/star-citizen"; fi
 
-            printf ":: ${color_yellow}Remove vkBasalt? [Y/n]:${color_normal} "
-            read -rp "" remove_vkBasalt
-            if [ "$remove_vkBasalt" == "y" ] || [ "$remove_vkBasalt" == "Y" ] || [ "$remove_vkBasalt" == "" ]; then remove_vkBasalt=true; fi
-            if [ "$remove_vkBasalt" == "n" ] || [ "$remove_vkBasalt" == "N" ]; then remove_vkBasalt=false; fi
-
-            if [ $remove_vkBasalt == true ]; then
+            confirm "Remove vkBasalt?"
+            if [ $? == 0 ]; then
                 printf "\n> Removing vkBasalt..."
                 uninstall_vkBasalt
             fi
