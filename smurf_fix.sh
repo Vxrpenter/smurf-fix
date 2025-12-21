@@ -44,30 +44,81 @@ printf "\nThis fix uses vkBasalt along with reshade shaders (specifically ColorM
 printf "\nThis red & blue colour channel swap will make the colours normal again."
 printf "\nPlease note, this requires the lug-wine-tkg-git-11.0rc1-2 LUG runner or newer (use LUG Helper to install)."
 
+choose_installation() {
+    printf ":: ${color_yellow}Choose a fix [v]kBasalt (default), [d]isplay, [o]ri: ${color_normal} "
+    read -rp "" fix
+    if [ "$fix" == "" ]; then fix="vkBasalt"; fi
+
+    case $fix in
+        vkBasalt|vkBasa|vkBas|vk|v )
+            return 0
+        ;;
+        display|displ|disp|dis|d )
+            return 1
+        ;;
+        ori|or|o )
+            return 2
+        ;;
+        * )
+            printf "No such option..."
+            choose_installation
+    esac
+}
+
 install_fix() {
     #
     #################### Variable Declaration ####################
     #
 
+    choose_installation
+    fix=$?
+
     printf "\n:: ${color_yellow}Enter Star Citizen wine prefix folder (Default: ${color_normal}/home/$USER/Games/star-citizen${color_yellow}):${color_normal} "
     read -rp "" starcitizen_dir
-    if [$starcitizen_dir == ""]; then starcitizen_dir="/home/$USER/Games/star-citizen"; fi
+    if [ "$starcitizen_dir" == "" ]; then starcitizen_dir="/home/$USER/Games/star-citizen"; fi
 
-    printf ":: ${color_yellow}The shader on/off toggle key (Default: ${color_normal}Home${color_yellow}): ${color_normal} "
-    read -rp "" toggle_key
-    if [$toggle_key == ""]; then toggle_key="Home"; fi
+    if [ $fix == 0 ] || [ $fix == 2 ]; then
+        printf ":: ${color_yellow}The shader on/off toggle key (Default: ${color_normal}Home${color_yellow}): ${color_normal} "
+        read -rp "" toggle_key
+        if [ $toggle_key == "" ]; then toggle_key="Home"; fi
+    fi
 
+    #
+    #################### vkBasalt Installation ####################
+    #
+
+    if [ $fix == 0 ] || [ $fix == 2 ]; then
+        printf "\n> Installing vkBasalt...\n"
+        location=$PWD
+        git clone https://aur.archlinux.org/vkbasalt.git ~/Downloads/vkBasalt/
+        cd  ~/Downloads/vkBasalt/
+        makepkg -si
+        cd $location
+        rm -rf ~/Downloads/vkBasalt/
+    fi
+
+    #
+    #################### Pick Installation ####################
+    #
+
+    case $fix in
+        0 )
+            vkBasalt_rod_fix $starcitizen_dir
+        ;;
+        1 )
+            display_fix $starcitizen_dir
+        ;;
+        2 )
+            vkBasalt_ori_fix $starcitizen_dir
+        ;;
+    esac
+}
+
+vkBasalt_rod_fix() {
+    starcitizen_dir=$1
     #
     #################### Shader Configuration  ####################
     #
-
-    printf "\n> Installing vkBasalt...\n"
-    location=$PWD
-    git clone https://aur.archlinux.org/vkbasalt.git ~/Downloads/vkBasalt/
-    cd  ~/Downloads/vkBasalt/
-    makepkg -si
-    cd $location
-    rm -rf ~/Downloads/vkBasalt/
 
     printf "\n> Configuring shader & texture folders..."
     mkdir -p ~/.config/vkBasalt/reshade-shaders  > /dev/null 2>&1
@@ -96,7 +147,7 @@ install_fix() {
     rm -rf ~/Downloads/SweetFX-master/
 
     #
-    #################### vkBasalt Configuration  ####################
+    #################### vkBasalt Configuration ####################
     #
 
     printf "\n> Creating vkBasalt configuration..."
@@ -121,18 +172,148 @@ install_fix() {
     printf "vkBasalt is compatible with reshade shaders & configurations"
 }
 
+display_fix() {
+    starcitizen_dir=$1
+
+    printf "\n> Applying Fix..."
+    sed -i '/# Performance options/a export DISPLAY=' $starcitizen_dir/sc-launch.sh
+
+    printf "\n\nDone!\n"
+    printf "Now when you launch SC, the launcher will appear be a bit broken.\n"
+    printf "Your aspect ratio and resolution may be a bit borkend.\n"
+}
+
+vkBasalt_ori_fix() {
+    starcitizen_dir=$1
+    #
+    #################### Setup Folders ####################
+    #
+
+    printf "\n> Setup Folders...\n"
+    mkdir -p ~/.local/share/vkBasalt
+    mkdir -p ~/.config/vkBasalt
+
+    #
+    #################### Clone Shaders ####################
+    #
+
+    printf "\n> Clone Shaders...\n"
+    cd ~/.local/share/vkBasalt
+    git clone https://github.com/crosire/reshade-shaders.git
+
+    #
+    #################### Setup Shaders ####################
+    #
+
+    printf "\n> Setup Shader Configs...\n"
+    cat > ~/.local/share/vkBasalt/reshade-shaders/Shaders/SwapRB.fx << EOF
+    #include "ReShade.fxh"
+
+    float3 SwapRB(float4 position : SV_Position, float2 texcoord : TexCoord) : SV_Target {
+        float3 color = tex2D(ReShade::BackBuffer, texcoord).rgb;
+        return float3(color.b, color.g, color.r);
+    }
+
+    technique SwapRB {
+        pass {
+            VertexShader = PostProcessVS;
+            PixelShader = SwapRB;
+        }
+    }
+EOF
+
+    #
+    #################### Setup Configs ####################
+    #
+
+    printf "\n> Setup vkBasalt configs...\n"
+    cat > ~/.config/vkBasalt/StarCitizen.conf << EOF
+    reshadeTexturePath = "$HOME/.local/share/vkBasalt/reshade-shaders/Textures"
+    reshadeIncludePath = "$HOME/.local/share/vkBasalt/reshade-shaders/Shaders"
+    effects = SwapRB
+    SwapRB = "$HOME/.local/share/vkBasalt/reshade-shaders/Shaders/SwapRB.fx"
+EOF
+
+    #
+    #################### Editing Launchscript ####################
+    #
+
+    printf "\n> Applying vkBasalt in Launchscript...\n"
+    sed -i '/# Optional HUDs/a export ENABLE_VKBASALT=1' $starcitizen_dir/sc-launch.sh
+    sed -i '/# Optional HUDs/a export VKBASALT_CONFIG_FILE="$HOME/.config/vkBasalt/StarCitizen.conf"' $starcitizen_dir/sc-launch.sh
+
+    sed -i 's/export DISPLAY=//g' $starcitizen_dir/sc-launch.sh
+    sed -i 's/"$wine_path"/wine "C:\Program Files\Roberts Space Industries\RSI Launcher\RSI Launcher.exe" --in-process-gpu > "$launch_log" 2>&1/"$wine_path"/wine "C:\Program Files\Roberts Space Industries\RSI Launcher\RSI Launcher.exe" > "$launch_log" 2>&1/g'$starcitizen_dir/sc-launch.sh
+
+    #
+    #################### Ending Text ####################
+    #
+
+    printf "\n\nDone!\n"
+}
+
 uninstall_fix() {
-    printf "\n:: ${color_yellow}Enter Star Citizen wine prefix folder (Default: ${color_normal}/home/$USER/Games/star-citizen${color_yellow}):${color_normal} "
-    read -rp "" starcitizen_dir
-    if [$starcitizen_dir == ""]; then starcitizen_dir="/home/$USER/Games/star-citizen"; fi
+    choose_installation
+    case $? in
+        0 )
+            printf "\n:: ${color_yellow}Enter Star Citizen wine prefix folder (Default: ${color_normal}/home/$USER/Games/star-citizen${color_yellow}):${color_normal} "
+            read -rp "" starcitizen_dir
+            if [ "$starcitizen_dir" == "" ]; then starcitizen_dir="/home/$USER/Games/star-citizen"; fi
 
-    printf "\n> Removing vkBasalt...\n"
-    sudo pacman -R vkbasalt --noconfirm
-    sudo pacman -R vkbasalt-debug --noconfirm
+            printf "\n:: ${color_yellow}Remive vkBasalt? [Y/n]:${color_normal} "
+            read -rp "" remove_vkBasalt
+            if [ $remove_vkBasalt == "y" ] || [ $remove_vkBasalt == "Y" ] || [ $remove_vkBasalt == "" ]; then remove_vkBasalt=true; fi
+            if [ $remove_vkBasalt == "n" ] || [ $remove_vkBasalt == "N" ]; then remove_vkBasalt=false; fi
 
-    printf "\n> Reverting launchscript..."
-    rm -rf ~/.config/vkBasalt/
-    sed -i 's/export ENABLE_VKBASALT=1//g' $starcitizen_dir/sc-launch.sh
+            if [ $remove_vkBasalt == true ]; then
+                printf "\n> Removing vkBasalt...\n"
+                sudo pacman -R vkbasalt --noconfirm
+                sudo pacman -R vkbasalt-debug --noconfirm
+                rm -rf ~/.config/vkBasalt/
+                rm -rf ~/.local/share/vkBasalt
+            fi
+
+            printf "\n> Reverting launchscript..."
+            sed -i 's/export ENABLE_VKBASALT=1//g' $starcitizen_dir/sc-launch.sh
+
+            printf "\n\nDone!\n"
+        ;;
+        1 )
+            printf "\n:: ${color_yellow}Enter Star Citizen wine prefix folder (Default: ${color_normal}/home/$USER/Games/star-citizen${color_yellow}):${color_normal} "
+            read -rp "" starcitizen_dir
+            if [ "$starcitizen_dir" == "" ]; then starcitizen_dir="/home/$USER/Games/star-citizen"; fi
+
+            printf "\n> Reverting launchscript..."
+            sed -i 's/export DISPLAY=//g' $starcitizen_dir/sc-launch.sh
+
+            printf "\n\nDone!\n"
+        ;;
+        2 )
+            printf "\n:: ${color_yellow}Enter Star Citizen wine prefix folder (Default: ${color_normal}/home/$USER/Games/star-citizen${color_yellow}):${color_normal} "
+            read -rp "" starcitizen_dir
+            if [ "$starcitizen_dir" == "" ]; then starcitizen_dir="/home/$USER/Games/star-citizen"; fi
+
+            printf "\n:: ${color_yellow}Remive vkBasalt? [Y/n]:${color_normal} "
+            read -rp "" remove_vkBasalt
+            if [ $remove_vkBasalt == "y" ] || [ $remove_vkBasalt == "Y" ] || [ $remove_vkBasalt == "" ]; then remove_vkBasalt=true; fi
+            if [ $remove_vkBasalt == "n" ] || [ $remove_vkBasalt == "N" ]; then remove_vkBasalt=false; fi
+
+            if [ $remove_vkBasalt == true ]; then
+                printf "\n> Removing vkBasalt...\n"
+                sudo pacman -R vkbasalt --noconfirm
+                sudo pacman -R vkbasalt-debug --noconfirm
+                rm -rf ~/.config/vkBasalt/
+                rm -rf ~/.local/share/vkBasalt
+            fi
+
+            printf "\n> Reverting launchscript..."
+            sed -i 's/export ENABLE_VKBASALT=1//g'
+            sed -i 's/export VKBASALT_CONFIG_FILE="$HOME/.config/vkBasalt/StarCitizen.conf//g' $starcitizen_dir/sc-launch.sh
+            sed -i 's/"$wine_path"/wine "C:\Program Files\Roberts Space Industries\RSI Launcher\RSI Launcher.exe" > "$launch_log" 2>&1/"$wine_path"/wine "C:\Program Files\Roberts Space Industries\RSI Launcher\RSI Launcher.exe" --in-process-gpu > "$launch_log" 2>&1/g'$starcitizen_dir/sc-launch.sh
+
+            printf "\n\nDone!\n"
+        ;;
+    esac
 }
 
 option() {
