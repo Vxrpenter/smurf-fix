@@ -65,6 +65,53 @@ choose_installation() {
     esac
 }
 
+install_vkBasalt() {
+    distro=lsb_release -i | cut -f 2-   > /dev/null 2>&1
+
+    case $distro in
+        Arch )
+            location=$PWD
+            git clone https://aur.archlinux.org/vkbasalt.git ~/Downloads/vkBasalt/
+            cd  ~/Downloads/vkBasalt/
+            makepkg -si
+            cd $location
+            rm -rf ~/Downloads/vkBasalt/
+        ;;
+        Fedora )
+            sudo dnf install vkBasalt
+        ;;
+        Ubuntu )
+            sudo apt install vkbasalt
+        ;;
+        Debian )
+            sudo apt install vkbasalt
+        ;;
+    esac
+}
+
+uninstall_vkBasalt() {
+    distro=lsb_release -i | cut -f 2-   > /dev/null 2>&1
+
+    case $distro in
+        Arch )
+            sudo pacman -R vkbasalt --noconfirm
+            sudo pacman -R vkbasalt-debug --noconfirm
+        ;;
+        Fedora )
+            sudo dnf remove vkBasalt
+        ;;
+        Ubuntu )
+            sudo apt remove vkbasalt
+        ;;
+        Debian )
+            sudo apt remove vkbasalt
+        ;;
+    esac
+
+    rm -rf ~/.config/vkBasalt/
+    rm -rf ~/.local/share/vkBasalt
+}
+
 install_fix() {
     #
     #################### Variable Declaration ####################
@@ -89,12 +136,7 @@ install_fix() {
 
     if [ $fix == 0 ] || [ $fix == 2 ]; then
         printf "\n> Installing vkBasalt...\n"
-        location=$PWD
-        git clone https://aur.archlinux.org/vkbasalt.git ~/Downloads/vkBasalt/
-        cd  ~/Downloads/vkBasalt/
-        makepkg -si
-        cd $location
-        rm -rf ~/Downloads/vkBasalt/
+        install_vkBasalt
     fi
 
     #
@@ -267,10 +309,7 @@ uninstall_fix() {
 
             if [ $remove_vkBasalt == true ]; then
                 printf "\n> Removing vkBasalt...\n"
-                sudo pacman -R vkbasalt --noconfirm
-                sudo pacman -R vkbasalt-debug --noconfirm
-                rm -rf ~/.config/vkBasalt/
-                rm -rf ~/.local/share/vkBasalt
+                uninstall_vkBasalt
             fi
 
             printf "\n> Reverting launchscript..."
@@ -300,10 +339,7 @@ uninstall_fix() {
 
             if [ $remove_vkBasalt == true ]; then
                 printf "\n> Removing vkBasalt...\n"
-                sudo pacman -R vkbasalt --noconfirm
-                sudo pacman -R vkbasalt-debug --noconfirm
-                rm -rf ~/.config/vkBasalt/
-                rm -rf ~/.local/share/vkBasalt
+                uninstall_vkBasalt
             fi
 
             printf "\n> Reverting launchscript..."
