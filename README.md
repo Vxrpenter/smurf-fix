@@ -16,7 +16,7 @@ You can go the easy route and just use the `smurf-fixs.sh` script which was deve
 
 **Run using commands:**
 ```sh
-sudo sh -c "$(curl -fsSL https://codeberg.org/Vxrpenter/smurf-fix/raw/branch/main/smurf_fix.sh)"
+sh -c "$(curl -fsSL https://codeberg.org/Vxrpenter/smurf-fix/raw/branch/main/smurf_fix.sh)"
 ```
 
 Or download [here](https://codeberg.org/Vxrpenter/smurf-fix/raw/branch/main/smurf_fix.sh) / download from source:**
