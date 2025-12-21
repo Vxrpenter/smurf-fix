@@ -76,7 +76,7 @@ install_vkBasalt() {
     distro="$(lsb_release -i | cut -f 2-)"
 
     case $distro in
-        Arch )
+        Arch|chachyos )
             pacman -Qi vkbasalt > /dev/null 2>&1
             if [ $? == 0 ]; then
                 printf "\n> vkBasalt already installed, skipping install.";
@@ -137,7 +137,7 @@ uninstall_vkBasalt() {
     distro="$(lsb_release -i | cut -f 2-)"
 
     case $distro in
-        Arch )
+        Arch|chachyos )
             pacman -Qi vkbasalt > /dev/null 2>&1
             if [ $? == 1 ]; then
                 printf "\n> vkBasalt not installed, skipping removal.";
