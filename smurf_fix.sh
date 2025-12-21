@@ -66,7 +66,7 @@ choose_installation() {
 }
 
 install_vkBasalt() {
-    distro=lsb_release -i | cut -f 2-   > /dev/null 2>&1
+    distro="$(lsb_release -i | cut -f 2-)"
 
     case $distro in
         Arch )
@@ -90,7 +90,9 @@ install_vkBasalt() {
 }
 
 uninstall_vkBasalt() {
-    distro=lsb_release -i | cut -f 2-   > /dev/null 2>&1
+    distro="$(lsb_release -i | cut -f 2-)"
+
+    echo $distro
 
     case $distro in
         Arch )
@@ -127,7 +129,7 @@ install_fix() {
     if [ $fix == 0 ] || [ $fix == 2 ]; then
         printf ":: ${color_yellow}The shader on/off toggle key (Default: ${color_normal}Home${color_yellow}): ${color_normal} "
         read -rp "" toggle_key
-        if [ $toggle_key == "" ]; then toggle_key="Home"; fi
+        if [ "$toggle_key" == "" ]; then toggle_key="Home"; fi
     fi
 
     #
@@ -302,13 +304,13 @@ uninstall_fix() {
             read -rp "" starcitizen_dir
             if [ "$starcitizen_dir" == "" ]; then starcitizen_dir="/home/$USER/Games/star-citizen"; fi
 
-            printf "\n:: ${color_yellow}Remive vkBasalt? [Y/n]:${color_normal} "
+            printf ":: ${color_yellow}Remove vkBasalt? [Y/n]:${color_normal} "
             read -rp "" remove_vkBasalt
-            if [ $remove_vkBasalt == "y" ] || [ $remove_vkBasalt == "Y" ] || [ $remove_vkBasalt == "" ]; then remove_vkBasalt=true; fi
-            if [ $remove_vkBasalt == "n" ] || [ $remove_vkBasalt == "N" ]; then remove_vkBasalt=false; fi
+            if [ "$remove_vkBasalt" == "y" ] || [ "$remove_vkBasalt" == "Y" ] || [ "$remove_vkBasalt" == "" ]; then remove_vkBasalt=true; fi
+            if [ "$remove_vkBasalt" == "n" ] || [ "$remove_vkBasalt" == "N" ]; then remove_vkBasalt=false; fi
 
             if [ $remove_vkBasalt == true ]; then
-                printf "\n> Removing vkBasalt...\n"
+                printf "\n> Removing vkBasalt..."
                 uninstall_vkBasalt
             fi
 
@@ -332,13 +334,13 @@ uninstall_fix() {
             read -rp "" starcitizen_dir
             if [ "$starcitizen_dir" == "" ]; then starcitizen_dir="/home/$USER/Games/star-citizen"; fi
 
-            printf "\n:: ${color_yellow}Remive vkBasalt? [Y/n]:${color_normal} "
+            printf ":: ${color_yellow}Remove vkBasalt? [Y/n]:${color_normal} "
             read -rp "" remove_vkBasalt
-            if [ $remove_vkBasalt == "y" ] || [ $remove_vkBasalt == "Y" ] || [ $remove_vkBasalt == "" ]; then remove_vkBasalt=true; fi
-            if [ $remove_vkBasalt == "n" ] || [ $remove_vkBasalt == "N" ]; then remove_vkBasalt=false; fi
+            if [ "$remove_vkBasalt" == "y" ] || [ "$remove_vkBasalt" == "Y" ] || [ "$remove_vkBasalt" == "" ]; then remove_vkBasalt=true; fi
+            if [ "$remove_vkBasalt" == "n" ] || [ "$remove_vkBasalt" == "N" ]; then remove_vkBasalt=false; fi
 
             if [ $remove_vkBasalt == true ]; then
-                printf "\n> Removing vkBasalt...\n"
+                printf "\n> Removing vkBasalt..."
                 uninstall_vkBasalt
             fi
 
