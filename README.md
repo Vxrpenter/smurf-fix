@@ -35,3 +35,9 @@ This bug only happens when using the Vulkan renderer, you can just switch it bac
 
 ### Launchscript Option:
 As pointed out by many users you can simply add `export DISPLAY=` to your sc-launch.sc to "fix" this issue (this can mess with your resolution and aspect ratio)
+
+## Credits
+- Rodson | Giving all of the base ideas and steps for others to experiment with
+- wunderacle | For helping with bugfixing
+- Sheru | For fixing a few bugs in early versions of the script
+- 0ri_ | For his own solution (available in the script)
