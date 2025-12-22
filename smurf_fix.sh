@@ -126,11 +126,11 @@ install_vkBasalt() {
 
 install_vkBasalt_arch() {
     location=$PWD
-    git clone https://aur.archlinux.org/vkbasalt.git ~/Downloads/vkBasalt/
-    cd  ~/Downloads/vkBasalt/
+    git clone https://aur.archlinux.org/vkbasalt.git /tmp/smurf-fix/vkBasalt/
+    cd  /tmp/smurf-fix/vkBasalt/
     makepkg -si
     cd $location
-    rm -rf ~/Downloads/vkBasalt/
+    rm -rf /tmp/smurf-fix/vkBasalt/
 }
 
 uninstall_vkBasalt() {
@@ -226,6 +226,7 @@ install_fix() {
 
 vkBasalt_rod_fix() {
     starcitizen_dir=$1
+    mkdir -p /tmp/smurf-fix/
     #
     #################### Shader Configuration  ####################
     #
@@ -236,25 +237,21 @@ vkBasalt_rod_fix() {
     mkdir -p ~/.config/vkBasalt/reshade-shaders/Textures  > /dev/null 2>&1
 
     printf "\n> Downloading reshade shaders..."
-    curl -LO --output-dir ~/Downloads/ https://github.com/crosire/reshade-shaders/archive/master.zip > /dev/null 2>&1
-    mv ~/Downloads/master.zip ~/Downloads/reshade-shaders.zip
+    curl -LO --output-dir /tmp/smurf-fix/ https://github.com/crosire/reshade-shaders/archive/master.zip > /dev/null 2>&1
+    mv /tmp/smurf-fix/master.zip /tmp/smurf-fix/reshade-shaders.zip
 
-    curl -LO --output-dir ~/Downloads/ https://github.com/CeeJayDK/SweetFX/archive/refs/heads/master.zip  > /dev/null 2>&1
-    mv ~/Downloads/master.zip ~/Downloads/sweetfx.zip
+    curl -LO --output-dir /tmp/smurf-fix/ https://github.com/CeeJayDK/SweetFX/archive/refs/heads/master.zip  > /dev/null 2>&1
+    mv /tmp/smurf-fix/master.zip /tmp/smurf-fix/sweetfx.zip
 
     printf "\n> Extracting shaders..."
-    unzip -qqo ~/Downloads/reshade-shaders.zip -d ~/Downloads
-    rm -f ~/Downloads/reshade-shaders.zip
-    unzip -qqo ~/Downloads/sweetfx.zip -d ~/Downloads
-    rm -f ~/Downloads/sweetfx.zip
+    unzip -qqo /tmp/smurf-fix/reshade-shaders.zip -d /tmp/smurf-fix/
+    unzip -qqo /tmp/smurf-fix/sweetfx.zip -d /tmp/smurf-fix/
 
     printf "\n> Moving shaders to folders..."
-    mv ~/Downloads/reshade-shaders-slim/Shaders/* ~/.config/vkBasalt/reshade-shaders/Shaders/
-    mv ~/Downloads/reshade-shaders-slim/Textures/* ~/.config/vkBasalt/reshade-shaders/Textures/
-    mv ~/Downloads/SweetFX-master/Shaders/SweetFX/* ~/.config/vkBasalt/reshade-shaders/Shaders/
-    mv ~/Downloads/SweetFX-master/Textures/SweetFX/* ~/.config/vkBasalt/reshade-shaders/Textures/
-    rm -rf ~/Downloads/reshade-shaders-slim/
-    rm -rf ~/Downloads/SweetFX-master/
+    mv /tmp/smurf-fix/reshade-shaders-slim/Shaders/* ~/.config/vkBasalt/reshade-shaders/Shaders/
+    mv /tmp/smurf-fix/reshade-shaders-slim/Textures/* ~/.config/vkBasalt/reshade-shaders/Textures/
+    mv /tmp/smurf-fix/SweetFX-master/Shaders/SweetFX/* ~/.config/vkBasalt/reshade-shaders/Shaders/
+    mv /tmp/smurf-fix/SweetFX-master/Textures/SweetFX/* ~/.config/vkBasalt/reshade-shaders/Textures/
 
     #
     #################### vkBasalt Configuration ####################
@@ -280,6 +277,8 @@ vkBasalt_rod_fix() {
     printf "Now when you launch SC, the launcher will appear orange, this indicates vkBasalt has loaded & is working.\n"
     printf "You can use the toggle key (default Home) to turn the effect on & off.\n"
     printf "vkBasalt is compatible with reshade shaders & configurations"
+
+    rm -rf /tmp/smurf-fix/
 }
 
 display_fix() {
