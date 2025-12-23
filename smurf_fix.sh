@@ -94,6 +94,17 @@ install_vkBasalt() {
                 install_vkBasalt_arch
             fi
         ;;
+        ManjaroLinux )
+            pamac search vkbasalt > /dev/null 2>&1
+
+            if [ $? == 0 ]; then
+                printf "\n> vkBasalt already installed, skipping install.";
+                return
+            fi
+
+            pamac install base-devel git
+            pamac build --no-confirm vkBasalt
+        ;;
         Fedora )
             dnf list installed vkbasalt > /dev/null 2>&1
             if [ $? == 0 ]; then
@@ -146,6 +157,16 @@ uninstall_vkBasalt() {
 
             sudo pacman -R vkbasalt --noconfirm
             sudo pacman -R vkbasalt-debug --noconfirm
+        ;;
+        ManjaroLinux )
+            pamac search vkbasalt > /dev/null 2>&1
+
+            if [ $? == 1 ]; then
+                printf "\n> vkBasalt not installed, skipping removal.";
+                return
+            fi
+
+            sudo pamac remove --no-confirm vkbasalt
         ;;
         Fedora )
             dnf list installed vkbasalt > /dev/null 2>&1
