@@ -83,7 +83,7 @@ install_vkBasalt() {
                 return
             fi
 
-            if [ -x "$(command -v curl)" ]; then
+            if [ -x "$(command -v yay)" ]; then
                 confirm "\n'yay' was detected on your system, do you want to use it?"
                 if [ $? == 0 ]; then
                     yay -S --noconfirm --mflags --skipinteg vkBasalt
