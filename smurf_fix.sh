@@ -114,16 +114,7 @@ install_vkBasalt() {
 
             sudo dnf install vkBasalt
         ;;
-        Ubuntu )
-            apt list --installed vkbasalt > /dev/null 2>&1
-            if [ $? == 0 ]; then
-                printf "\n> vkBasalt already installed, skipping install.";
-                return
-            fi
-
-            sudo apt install vkbasalt
-        ;;
-        Debian )
+        Ubuntu|Debian|Pop )
             apt list --installed vkbasalt > /dev/null 2>&1
             if [ $? == 0 ]; then
                 printf "\n> vkBasalt already installed, skipping install.";
@@ -177,16 +168,7 @@ uninstall_vkBasalt() {
 
             sudo dnf remove vkBasalt
         ;;
-        Ubuntu )
-            apt list --installed vkbasalt > /dev/null 2>&1
-            if [ $? == 1 ]; then
-                printf "\n> vkBasalt not installed, skipping removal.";
-                return
-            fi
-
-            sudo apt remove vkbasalt
-        ;;
-        Debian )
+        Ubuntu|Debian|Pop )
             apt list --installed vkbasalt > /dev/null 2>&1
             if [ $? == 1 ]; then
                 printf "\n> vkBasalt not installed, skipping removal.";
